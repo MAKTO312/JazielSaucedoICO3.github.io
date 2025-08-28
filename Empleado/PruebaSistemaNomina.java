@@ -1,5 +1,6 @@
 public class PruebaSistemaNomina {// clase principal
-    public static void main(String[] args) {// método main para ejecutar la aplicación y probar las clases
+    public static void main(String[] args) {
+    // Creamos los objetos de las clases derivadas que son empleadoasalariado, empleadoporhoras, empleadoporcomision y empleadobasemascomision
         EmpleadoAsalariado empleadoAsalariado =
             new EmpleadoAsalariado("John", "Smith", "111-11-1111", 800.00);
         EmpleadoPorHoras empleadoPorHoras =
@@ -9,19 +10,17 @@ public class PruebaSistemaNomina {// clase principal
         EmpleadoBaseMasComision empleadoBaseMasComision =
             new EmpleadoBaseMasComision("Bob", "Lewis", "444-44-4444", 5000, .04, 300);
 
-            //usamos system.out.println para imprimir en pantalla y los datos de los empleados
+            //Va a devolver la información de cada empleado por separado y los resultados del metodo toString
         System.out.println("Empleados procesados por separado:\n");
+        System.out.printf("%s%n%s: $%,.2f%n%n", empleadoAsalariado,"ingresos", empleadoAsalariado.ingresos());
+        System.out.printf("%s%n%s: $%,.2f%n%n", empleadoPorHoras,"ingresos", empleadoPorHoras.ingresos());
+        System.out.printf("%s%n%s: $%,.2f%n%n", empleadoPorComision,"ingresos", empleadoPorComision.ingresos());
+        System.out.printf("%s%n%s: $%,.2f%n%n", empleadoBaseMasComision,"ingresos", empleadoBaseMasComision.ingresos());
 
-        System.out.printf("%s%n%s: $%,.2f%n%n", empleadoAsalariado,
-                "ingresos", empleadoAsalariado.ingresos());
-        System.out.printf("%s%n%s: $%,.2f%n%n", empleadoPorHoras,
-                "ingresos", empleadoPorHoras.ingresos());
-        System.out.printf("%s%n%s: $%,.2f%n%n", empleadoPorComision,
-                "ingresos", empleadoPorComision.ingresos());
-        System.out.printf("%s%n%s: $%,.2f%n%n", empleadoBaseMasComision,
-                "ingresos", empleadoBaseMasComision.ingresos());
+
 // creamos un arreglo de empleados para indicar que todos son empleados y que tipo de empleado son
         Empleado[] empleados = new Empleado[4];
+        // inicializamos el arreglo con los objetos de las clases derivadas
         empleados[0] = empleadoAsalariado;
         empleados[1] = empleadoPorHoras;
         empleados[2] = empleadoPorComision;
