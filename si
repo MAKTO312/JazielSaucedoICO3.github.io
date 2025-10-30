@@ -1,0 +1,247 @@
+import javax.swing.*;
+import java.awt.*;
+import java.util.ArrayList;
+import java.util.List;
+
+public class agenda {
+    // UI
+    private JFrame frame;
+    private JLabel lblTitulo, lblNombre, lblApellidoP, lblApellidoM, lblNumeroTel, lblCorreo, lblDireccion;
+    private JTextField tfNombre, tfApellidoP, tfApellidoM, tfNumeroTel, tfCorreo, tfDireccion;
+    private JButton btBuscar, btAgregar, btEliminar, btModificar, btSalir, btLimpiar;
+
+    // almacenamiento simple en memoria
+    private final List<Contact> contacts = new ArrayList<>();
+
+    public agenda() {
+        // inicializar componentes declarados
+        lblTitulo = new JLabel("Agenda", SwingConstants.CENTER);
+        lblNombre = new JLabel("Nombre:");
+        lblApellidoP = new JLabel("Apellido Paterno:");
+        lblApellidoM = new JLabel("Apellido Materno:");
+        lblNumeroTel = new JLabel("Número Tel:");
+        lblCorreo = new JLabel("Correo:");
+        lblDireccion = new JLabel("Dirección:");
+
+        tfNombre = new JTextField(20);
+        tfApellidoP = new JTextField(20);
+        tfApellidoM = new JTextField(20);
+        tfNumeroTel = new JTextField(15);
+        tfCorreo = new JTextField(20);
+        tfDireccion = new JTextField(30);
+
+        btBuscar = new JButton("Buscar");
+        btAgregar = new JButton("Agregar");
+        btEliminar = new JButton("Eliminar");
+        btModificar = new JButton("Modificar");
+        btSalir = new JButton("Salir");
+        btLimpiar = new JButton("Limpiar");
+
+        SwingUtilities.invokeLater(this::createAndShowGUI);
+    }
+
+    private void createAndShowGUI() {
+        frame = new JFrame("Agenda");
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setSize(620, 380);
+        frame.setLocationRelativeTo(null);
+
+        frame.getContentPane().add(lblTitulo, BorderLayout.NORTH);
+
+        // Panel de formulario (muestra todos los text fields en la pantalla de inicio)
+        JPanel form = new JPanel(new GridLayout(6, 2, 6, 6));
+        form.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        form.add(lblNombre);
+        form.add(tfNombre);
+        form.add(lblApellidoP);
+        form.add(tfApellidoP);
+        form.add(lblApellidoM);
+        form.add(tfApellidoM);
+        form.add(lblNumeroTel);
+        form.add(tfNumeroTel);
+        form.add(lblCorreo);
+        form.add(tfCorreo);
+        form.add(lblDireccion);
+        form.add(tfDireccion);
+        frame.getContentPane().add(form, BorderLayout.CENTER);
+
+        // Panel de botones
+        JPanel botonesPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 10));
+        botonesPanel.add(btBuscar);
+        botonesPanel.add(btAgregar);
+        botonesPanel.add(btEliminar);
+        botonesPanel.add(btModificar);
+        botonesPanel.add(btLimpiar);
+        botonesPanel.add(btSalir);
+        frame.getContentPane().add(botonesPanel, BorderLayout.SOUTH);
+
+        // Listeners
+        btAgregar.addActionListener(e -> agregarContacto());
+        btBuscar.addActionListener(e -> buscarContacto());
+        btEliminar.addActionListener(e -> eliminarContacto());
+        btModificar.addActionListener(e -> modificarContacto());
+        btLimpiar.addActionListener(e -> {
+            limpiarCampos();
+            habilitarOperaciones(true);
+        });
+        btSalir.addActionListener(e -> {
+            frame.dispose();
+            System.exit(0);
+        });
+
+        frame.setVisible(true);
+    }
+
+    // agrega un contacto desde los campos visibles
+    private void agregarContacto() {
+        String nombre = tfNombre.getText().trim();
+        if (nombre.isEmpty()) {
+            JOptionPane.showMessageDialog(frame, "Ingrese al menos el Nombre para agregar.");
+            return;
+        }
+        Contact c = new Contact(
+            nombre,
+            tfApellidoP.getText().trim(),
+            tfApellidoM.getText().trim(),
+            tfNumeroTel.getText().trim(),
+            tfCorreo.getText().trim(),
+            tfDireccion.getText().trim()
+        );
+        contacts.add(c);
+        JOptionPane.showMessageDialog(frame, "Contacto agregado: " + c.nombre);
+        limpiarCampos();
+    }
+
+    // busca por nombre: siempre usa la ventana de búsqueda (input dialog),
+    // no reutiliza los datos mostrados en la interfaz.
+    private void buscarContacto() {
+        String nombreBusq = JOptionPane.showInputDialog(frame, "Ingrese el Nombre a buscar:");
+        if (nombreBusq == null) return; // usuario canceló
+        nombreBusq = nombreBusq.trim();
+        if (nombreBusq.isEmpty()) {
+            JOptionPane.showMessageDialog(frame, "Nombre de búsqueda vacío.");
+            return;
+        }
+
+        Contact encontrado = null;
+        for (Contact c : contacts) {
+            if (c.nombre.equalsIgnoreCase(nombreBusq)) {
+                encontrado = c;
+                break;
+            }
+        }
+        if (encontrado != null) {
+            // mostrar datos en los campos y bloquear edición
+            tfNombre.setText(encontrado.nombre);
+            tfApellidoP.setText(encontrado.apellidoP);
+            tfApellidoM.setText(encontrado.apellidoM);
+            tfNumeroTel.setText(encontrado.telefono);
+            tfCorreo.setText(encontrado.correo);
+            tfDireccion.setText(encontrado.direccion);
+            bloquearCampos(true); // evitar modificación directa
+            habilitarOperaciones(false); // deshabilita Agregar/Modificar mientras se muestra resultado
+            JOptionPane.showMessageDialog(frame, "Contacto encontrado: " + encontrado.nombre);
+        } else {
+            JOptionPane.showMessageDialog(frame, "No se encontró contacto con nombre: " + nombreBusq);
+        }
+    }
+
+    // elimina el contacto que coincida con el nombre actual en el campo Nombre
+    private void eliminarContacto() {
+        String nombre = tfNombre.getText().trim();
+        if (nombre.isEmpty()) {
+            JOptionPane.showMessageDialog(frame, "Ingrese el Nombre del contacto a eliminar.");
+            return;
+        }
+        Contact toRemove = null;
+        for (Contact c : contacts) {
+            if (c.nombre.equalsIgnoreCase(nombre)) {
+                toRemove = c;
+                break;
+            }
+        }
+        if (toRemove != null) {
+            int resp = JOptionPane.showConfirmDialog(frame, "Eliminar contacto " + toRemove.nombre + "?", "Confirmar", JOptionPane.YES_NO_OPTION);
+            if (resp == JOptionPane.YES_OPTION) {
+                contacts.remove(toRemove);
+                limpiarCampos();
+                habilitarOperaciones(true);
+                JOptionPane.showMessageDialog(frame, "Contacto eliminado.");
+            }
+        } else {
+            JOptionPane.showMessageDialog(frame, "Contacto no encontrado para eliminar.");
+        }
+    }
+
+    // modifica el primer contacto que coincida con el nombre del campo Nombre
+    private void modificarContacto() {
+        String nombre = tfNombre.getText().trim();
+        if (nombre.isEmpty()) {
+            JOptionPane.showMessageDialog(frame, "Ingrese el Nombre del contacto a modificar.");
+            return;
+        }
+        Contact found = null;
+        for (Contact c : contacts) {
+            if (c.nombre.equalsIgnoreCase(nombre)) {
+                found = c;
+                break;
+            }
+        }
+        if (found != null) {
+            // Solo permite modificar si los campos están editables
+            if (!tfNombre.isEditable()) {
+                JOptionPane.showMessageDialog(frame, "Pulse 'Limpiar' para habilitar la edición antes de modificar.");
+                return;
+            }
+            found.apellidoP = tfApellidoP.getText().trim();
+            found.apellidoM = tfApellidoM.getText().trim();
+            found.telefono = tfNumeroTel.getText().trim();
+            found.correo = tfCorreo.getText().trim();
+            found.direccion = tfDireccion.getText().trim();
+            JOptionPane.showMessageDialog(frame, "Contacto modificado: " + found.nombre);
+            limpiarCampos();
+        } else {
+            JOptionPane.showMessageDialog(frame, "Contacto no encontrado para modificar.");
+        }
+    }
+
+    private void limpiarCampos() {
+        tfNombre.setText("");
+        tfApellidoP.setText("");
+        tfApellidoM.setText("");
+        tfNumeroTel.setText("");
+        tfCorreo.setText("");
+        tfDireccion.setText("");
+        bloquearCampos(false);
+    }
+
+    // bloquear o desbloquear edición de los campos (true = bloqueado/no editable)
+    private void bloquearCampos(boolean bloquear) {
+        boolean editable = !bloquear;
+        tfNombre.setEditable(editable);
+        tfApellidoP.setEditable(editable);
+        tfApellidoM.setEditable(editable);
+        tfNumeroTel.setEditable(editable);
+        tfCorreo.setEditable(editable);
+        tfDireccion.setEditable(editable);
+    }
+
+    // habilita o deshabilita operaciones que deberían inhabilitarse tras una búsqueda
+    private void habilitarOperaciones(boolean habilitar) {
+        btAgregar.setEnabled(habilitar);
+        btModificar.setEnabled(habilitar);
+        // dejar Eliminar habilitado para permitir borrar el contacto mostrado si se desea
+    }
+
+    // clase de datos interna
+    private static class Contact {
+        String nombre, apellidoP, apellidoM, telefono, correo, direccion;
+        Contact(String n, String ap, String am, String tel, String mail, String dir) {
+            nombre = n; apellidoP = ap; apellidoM = am; telefono = tel; correo = mail; direccion = dir;
+        }
+    }
+
+    public static void main(String[] args) {
+        new agenda();
+    }
+}
